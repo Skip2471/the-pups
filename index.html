@@ -1,0 +1,86 @@
+		<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>The Pups</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { margin:0; font-family:Arial,sans-serif; background:#ffeaf2; color:#082b7a; }
+    header { background:#0033cc; color:white; text-align:center; padding:28px; border-radius:0 0 32px 32px; }
+    h1 { margin:0; font-size:42px; }
+    .container { padding:20px; max-width:900px; margin:auto; }
+    .tabs { display:flex; gap:10px; margin:20px 0; }
+    button { flex:1; padding:12px; border-radius:16px; border:2px solid #0033cc; background:white; color:#0033cc; font-weight:bold; }
+    button.active { background:#0033cc; color:white; }
+    .gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:16px; }
+    .card { background:white; border-radius:22px; overflow:hidden; box-shadow:0 8px 20px rgba(0,0,0,.1); }
+    .card img { width:100%; height:180px; object-fit:cover; display:block; }
+    .info { padding:12px; }
+    .info h3 { margin:0; color:#0033cc; }
+    .info p { margin:6px 0 0; color:#444; font-size:14px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🐾 The Pups</h1>
+  <p>Rocket & Luna’s family photo album</p>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <button class="active" onclick="showAlbum('All', this)">All</button>
+    <button onclick="showAlbum('Rocket', this)">Rocket</button>
+    <button onclick="showAlbum('Luna', this)">Luna</button>
+    <button onclick="showAlbum('Both', this)">Both</button>
+  </div>
+
+  <div class="gallery" id="gallery"></div>
+</div>
+
+<script>
+const photos = [
+  {
+    file: "photos/rocket1.JPG",
+    album: "Rocket",
+    caption: "Rocket looking handsome"
+  },
+  {
+    file: "photos/luna1.JPG",
+    album: "Luna",
+    caption: "Sweet Luna"
+  },
+  {
+    file: "photos/both1.JPG",
+    album: "Both",
+    caption: "Rocket and Luna together"
+  }
+];
+
+function showAlbum(album, button) {
+  document.querySelectorAll("button").forEach(btn => btn.classList.remove("active"));
+  button.classList.add("active");
+
+  const gallery = document.getElementById("gallery");
+  gallery.innerHTML = "";
+
+  photos
+    .filter(photo => album === "All" || photo.album === album)
+    .forEach(photo => {
+      gallery.innerHTML += `
+        <div class="card">
+          <img src="${photo.file}" alt="${photo.caption}">
+          <div class="info">
+            <h3>${photo.album}</h3>
+            <p>${photo.caption}</p>
+          </div>
+        </div>
+      `;
+    });
+}
+
+showAlbum("All", document.querySelector("button"));
+</script>
+
+</body>
+</html>
