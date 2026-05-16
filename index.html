@@ -1,86 +1,212 @@
-		<!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>The Pups</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Pups</title>
+
   <style>
-    body { margin:0; font-family:Arial,sans-serif; background:#ffeaf2; color:#082b7a; }
-    header { background:#0033cc; color:white; text-align:center; padding:28px; border-radius:0 0 32px 32px; }
-    h1 { margin:0; font-size:42px; }
-    .container { padding:20px; max-width:900px; margin:auto; }
-    .tabs { display:flex; gap:10px; margin:20px 0; }
-    button { flex:1; padding:12px; border-radius:16px; border:2px solid #0033cc; background:white; color:#0033cc; font-weight:bold; }
-    button.active { background:#0033cc; color:white; }
-    .gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:16px; }
-    .card { background:white; border-radius:22px; overflow:hidden; box-shadow:0 8px 20px rgba(0,0,0,.1); }
-    .card img { width:100%; height:180px; object-fit:cover; display:block; }
-    .info { padding:12px; }
-    .info h3 { margin:0; color:#0033cc; }
-    .info p { margin:6px 0 0; color:#444; font-size:14px; }
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fdeff6;
+      color: #102a72;
+    }
+
+    header {
+      background: #1428c8;
+      color: white;
+      text-align: center;
+      padding: 55px 20px 65px;
+      border-bottom-left-radius: 60px;
+      border-bottom-right-radius: 60px;
+    }
+
+    header h1 {
+      font-size: 54px;
+      margin: 0;
+      letter-spacing: 2px;
+    }
+
+    header p {
+      font-size: 22px;
+      margin-top: 20px;
+    }
+
+    .paw {
+      font-size: 42px;
+      margin-right: 10px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 50px auto;
+      padding: 0 20px;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-bottom: 45px;
+    }
+
+    button {
+      padding: 18px 10px;
+      border-radius: 24px;
+      border: 4px solid #1428c8;
+      background: white;
+      color: #1428c8;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button.active {
+      background: #1428c8;
+      color: white;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 40px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .card img {
+      width: 100%;
+      height: 340px;
+      object-fit: cover;
+      display: block;
+      background: white;
+    }
+
+    .card-content {
+      padding: 25px;
+      border-top: 1px solid #ddd;
+    }
+
+    .card-content h2 {
+      margin: 0 0 12px;
+      color: #1428c8;
+      font-size: 30px;
+    }
+
+    .card-content p {
+      margin: 0;
+      color: #444;
+      font-size: 22px;
+      line-height: 1.3;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    footer {
+      text-align: center;
+      padding: 35px 15px;
+      color: #1428c8;
+      font-size: 18px;
+    }
+
+    @media (max-width: 700px) {
+      header h1 {
+        font-size: 46px;
+      }
+
+      header p {
+        font-size: 20px;
+      }
+
+      .buttons {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .gallery {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+
+      .card img {
+        height: 320px;
+      }
+    }
   </style>
 </head>
+
 <body>
+  <header>
+    <h1><span class="paw">🐾</span>The Pups</h1>
+    <p>Rocket & Luna’s family photo album</p>
+  </header>
 
-<header>
-  <h1>🐾 The Pups</h1>
-  <p>Rocket & Luna’s family photo album</p>
-</header>
+  <main class="container">
+    <div class="buttons">
+      <button class="active" onclick="filterGallery('all', this)">All</button>
+      <button onclick="filterGallery('rocket', this)">Rocket</button>
+      <button onclick="filterGallery('luna', this)">Luna</button>
+      <button onclick="filterGallery('both', this)">Both</button>
+    </div>
 
-<div class="container">
-  <div class="tabs">
-    <button class="active" onclick="showAlbum('All', this)">All</button>
-    <button onclick="showAlbum('Rocket', this)">Rocket</button>
-    <button onclick="showAlbum('Luna', this)">Luna</button>
-    <button onclick="showAlbum('Both', this)">Both</button>
-  </div>
-
-  <div class="gallery" id="gallery"></div>
-</div>
-
-<script>
-const photos = [
-  {
-    file: <img src="rocket1.jpg">
-    album: "Rocket",
-    caption: "Rocket looking handsome"
-  },
-  {
-    file: "photos/luna1.JPG",
-    album: "Luna",
-    caption: "Sweet Luna"
-  },
-  {
-    file: "photos/both1.JPG",
-    album: "Both",
-    caption: "Rocket and Luna together"
-  }
-];
-
-function showAlbum(album, button) {
-  document.querySelectorAll("button").forEach(btn => btn.classList.remove("active"));
-  button.classList.add("active");
-
-  const gallery = document.getElementById("gallery");
-  gallery.innerHTML = "";
-
-  photos
-    .filter(photo => album === "All" || photo.album === album)
-    .forEach(photo => {
-      gallery.innerHTML += `
-        <div class="card">
-          <img src="${photo.file}" alt="${photo.caption}">
-          <div class="info">
-            <h3>${photo.album}</h3>
-            <p>${photo.caption}</p>
-          </div>
+    <section class="gallery">
+      <div class="card rocket">
+        <img src="rocket1.jpg" alt="Rocket">
+        <div class="card-content">
+          <h2>Rocket</h2>
+          <p>Rocket looking handsome</p>
         </div>
-      `;
-    });
-}
+      </div>
 
-showAlbum("All", document.querySelector("button"));
-</script>
+      <div class="card luna">
+        <img src="luna1.JPG" alt="Luna">
+        <div class="card-content">
+          <h2>Luna</h2>
+          <p>Sweet Luna</p>
+        </div>
+      </div>
 
+      <div class="card both">
+        <img src="both1.JPG" alt="Rocket and Luna together">
+        <div class="card-content">
+          <h2>Both</h2>
+          <p>Rocket and Luna together</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Made with love for Rocket and Luna 🐶
+  </footer>
+
+  <script>
+    function filterGallery(category, buttonClicked) {
+      const cards = document.querySelectorAll('.card');
+      const buttons = document.querySelectorAll('button');
+
+      buttons.forEach(button => button.classList.remove('active'));
+      buttonClicked.classList.add('active');
+
+      cards.forEach(card => {
+        if (category === 'all' || card.classList.contains(category)) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+  </script>
 </body>
 </html>
