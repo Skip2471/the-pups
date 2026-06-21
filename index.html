@@ -25,14 +25,8 @@
       border-bottom-right-radius: 55px;
     }
 
-    header h1 {
-      font-size: 48px;
-      margin: 0;
-    }
-
-    header p {
-      font-size: 20px;
-    }
+    header h1 { font-size: 48px; margin: 0; }
+    header p { font-size: 20px; }
 
     main {
       max-width: 900px;
@@ -40,11 +34,14 @@
       padding: 0 20px;
     }
 
-    .upload-box {
+    .upload-box, .card {
       background: white;
-      padding: 25px;
-      border-radius: 28px;
+      border-radius: 35px;
       box-shadow: 0 8px 25px rgba(20, 40, 200, 0.12);
+    }
+
+    .upload-box {
+      padding: 25px;
       margin-bottom: 30px;
     }
 
@@ -53,6 +50,7 @@
       display: block;
       margin-top: 15px;
       margin-bottom: 8px;
+      font-size: 20px;
     }
 
     input, select, button {
@@ -69,6 +67,13 @@
       font-weight: bold;
       margin-top: 18px;
       cursor: pointer;
+    }
+
+    #status {
+      margin-top: 15px;
+      font-size: 18px;
+      color: #d93025;
+      font-weight: bold;
     }
 
     .filters {
@@ -97,10 +102,7 @@
     }
 
     .card {
-      background: white;
-      border-radius: 35px;
       overflow: hidden;
-      box-shadow: 0 8px 25px rgba(20, 40, 200, 0.12);
     }
 
     .card img {
@@ -123,14 +125,11 @@
       font-size: 24px;
       color: #444;
       line-height: 1.3;
-      white-space: pre-wrap;
     }
 
     .delete-btn {
       background: #d93025;
       border: none;
-      color: white;
-      margin-top: 18px;
     }
 
     footer {
@@ -150,20 +149,21 @@
 
   <main>
     <div class="upload-box">
-      <label for="photoInput">Choose photo</label>
+      <label>Choose photo</label>
       <input type="file" id="photoInput" accept="image/*">
 
-      <label for="categoryInput">Category</label>
+      <label>Category</label>
       <select id="categoryInput">
         <option value="Rocket">Rocket</option>
         <option value="Luna">Luna</option>
         <option value="Both">Both</option>
       </select>
 
-      <label for="captionInput">Caption</label>
+      <label>Caption</label>
       <input type="text" id="captionInput" placeholder="Add your caption">
 
-      <button onclick="uploadPhoto()">Upload Photo</button>
+      <button id="uploadBtn">Upload Photo</button>
+      <div id="status"></div>
     </div>
 
     <div class="filters">
@@ -188,18 +188,10 @@
       ref,
       uploadBytes,
       getDownloadURL,
+      listAll,
+      getMetadata,
       deleteObject
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-    import {
-      getFirestore,
-      collection,
-      addDoc,
-      getDocs,
-      deleteDoc,
-      doc,
-      query,
-      orderBy
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCAyLnLBfqSPMG1PgIsy8yIq9juj4_NCZo",
@@ -213,65 +205,12 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const storage = getStorage(app);
-    const db = getFirestore(app);
 
     let photos = [];
     let currentFilter = "All";
 
-    await signInAnonymously(auth);
-    await loadPhotos();
-
-    window.uploadPhoto = async function () {
-      const fileInput = document.getElementById("photoInput");
-      const categoryInput = document.getElementById("categoryInput");
-      const captionInput = document.getElementById("captionInput");
-
-      const file = fileInput.files[0];
-
-      if (!file) {
-        alert("Please choose a photo first.");
-        return;
-      }
-
-      const category = categoryInput.value;
-      const caption = captionInput.value.trim();
-
-      const fileName = Date.now() + "-" + file.name;
-      const filePath = "photos/" + fileName;
-      const storageRef = ref(storage, filePath);
-
-      await uploadBytes(storageRef, file);
-      const imageUrl = await getDownloadURL(storageRef);
-
-      await addDoc(collection(db, "photos"), {
-        imageUrl: imageUrl,
-        filePath: filePath,
-        category: category,
-        caption: caption,
-        createdAt: Date.now()
-      });
-
-      fileInput.value = "";
-      captionInput.value = "";
-
-      await loadPhotos();
-    };
-
-    async function loadPhotos() {
-      photos = [];
-
-      const q = query(collection(db, "photos"), orderBy("createdAt", "desc"));
-      const snapshot = await getDocs(q);
-
-      snapshot.forEach((document) => {
-        photos.push({
-          id: document.id,
-          ...document.data()
-        });
-      });
-
-      renderGallery();
-    }
+    const status = document.getElementById("status");
+    const uploadBtn = document.getElementById("uploadBtn");
 
     function cleanCaption(caption) {
       if (!caption) return "";
@@ -283,6 +222,103 @@
         .trim();
     }
 
+    function escapeHTML(text) {
+      return text.replace(/[&<>"']/g, function(match) {
+        return {
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;"
+        }[match];
+      });
+    }
+
+    async function startApp() {
+      try {
+        status.textContent = "Signing in...";
+        await signInAnonymously(auth);
+        status.textContent = "";
+        await loadPhotos();
+      } catch (error) {
+        status.textContent = "Sign-in failed. Check Anonymous Authentication.";
+      }
+    }
+
+    uploadBtn.addEventListener("click", uploadPhoto);
+
+    async function uploadPhoto() {
+      const fileInput = document.getElementById("photoInput");
+      const categoryInput = document.getElementById("categoryInput");
+      const captionInput = document.getElementById("captionInput");
+
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("Please choose a photo first.");
+        return;
+      }
+
+      try {
+        uploadBtn.disabled = true;
+        uploadBtn.textContent = "Uploading...";
+        status.textContent = "";
+
+        const category = categoryInput.value;
+        const caption = captionInput.value.trim();
+
+        const fileName = Date.now() + "-" + file.name;
+        const filePath = "photos/" + fileName;
+        const storageRef = ref(storage, filePath);
+
+        await uploadBytes(storageRef, file, {
+          customMetadata: {
+            category: category,
+            caption: caption
+          }
+        });
+
+        fileInput.value = "";
+        captionInput.value = "";
+
+        await loadPhotos();
+
+        uploadBtn.textContent = "Upload Photo";
+        uploadBtn.disabled = false;
+      } catch (error) {
+        status.textContent = "Upload failed: " + error.message;
+        uploadBtn.textContent = "Upload Photo";
+        uploadBtn.disabled = false;
+      }
+    }
+
+    async function loadPhotos() {
+      photos = [];
+
+      try {
+        const photosRef = ref(storage, "photos");
+        const result = await listAll(photosRef);
+
+        for (const itemRef of result.items) {
+          const url = await getDownloadURL(itemRef);
+          const metadata = await getMetadata(itemRef);
+
+          photos.push({
+            url: url,
+            fullPath: itemRef.fullPath,
+            name: itemRef.name,
+            category: metadata.customMetadata?.category || "Both",
+            caption: cleanCaption(metadata.customMetadata?.caption || "")
+          });
+        }
+
+        photos.sort((a, b) => b.name.localeCompare(a.name));
+        renderGallery();
+      } catch (error) {
+        status.textContent = "Could not load photos: " + error.message;
+      }
+    }
+
     function renderGallery() {
       const gallery = document.getElementById("gallery");
       gallery.innerHTML = "";
@@ -292,19 +328,17 @@
         : photos.filter(photo => photo.category === currentFilter);
 
       filteredPhotos.forEach(photo => {
-        const caption = cleanCaption(photo.caption);
-
         const card = document.createElement("div");
         card.className = "card";
 
+        const caption = cleanCaption(photo.caption);
+
         card.innerHTML = `
-          <img src="${photo.imageUrl}" alt="${photo.category}">
+          <img src="${photo.url}" alt="${photo.category}">
           <div class="card-content">
-            <h2>${photo.category}</h2>
-            ${caption ? `<p>${caption}</p>` : ""}
-            <button class="delete-btn" onclick="deletePhoto('${photo.id}', '${photo.filePath || ""}')">
-              Delete Photo
-            </button>
+            <h2>${escapeHTML(photo.category)}</h2>
+            ${caption ? `<p>${escapeHTML(caption)}</p>` : ""}
+            <button class="delete-btn" onclick="deletePhoto('${photo.fullPath}')">Delete Photo</button>
           </div>
         `;
 
@@ -312,25 +346,19 @@
       });
     }
 
-    window.deletePhoto = async function (photoId, filePath) {
+    window.deletePhoto = async function(fullPath) {
       const confirmDelete = confirm("Delete this photo?");
-
       if (!confirmDelete) return;
 
-      await deleteDoc(doc(db, "photos", photoId));
-
-      if (filePath) {
-        try {
-          await deleteObject(ref(storage, filePath));
-        } catch (error) {
-          console.log("Photo file could not be deleted from storage, but it was removed from the gallery.");
-        }
+      try {
+        await deleteObject(ref(storage, fullPath));
+        await loadPhotos();
+      } catch (error) {
+        alert("Delete failed: " + error.message);
       }
-
-      await loadPhotos();
     };
 
-    window.setFilter = function (filter, button) {
+    window.setFilter = function(filter, button) {
       currentFilter = filter;
 
       document.querySelectorAll(".filters button").forEach(btn => {
@@ -340,6 +368,8 @@
       button.classList.add("active");
       renderGallery();
     };
+
+    startApp();
   </script>
 </body>
 </html>
