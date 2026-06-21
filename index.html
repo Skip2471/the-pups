@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>The Pups</title>
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
@@ -17,10 +17,10 @@
     }
 
     header {
-      background: #1428c8;
+      background: linear-gradient(#7f7cf0, #1428c8);
       color: white;
       text-align: center;
-      padding: 45px 20px 55px;
+      padding: 55px 20px 45px;
       border-bottom-left-radius: 55px;
       border-bottom-right-radius: 55px;
     }
@@ -34,13 +34,13 @@
       padding: 0 20px;
     }
 
-    .upload-box, .card {
+    .box, .card {
       background: white;
       border-radius: 35px;
       box-shadow: 0 8px 25px rgba(20, 40, 200, 0.12);
     }
 
-    .upload-box {
+    .box {
       padding: 25px;
       margin-bottom: 30px;
     }
@@ -65,21 +65,14 @@
       background: #1428c8;
       color: white;
       font-weight: bold;
-      margin-top: 18px;
+      margin-top: 14px;
       cursor: pointer;
-    }
-
-    #status {
-      margin-top: 15px;
-      font-size: 18px;
-      color: #d93025;
-      font-weight: bold;
     }
 
     .filters {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px;
+      gap: 14px;
       margin: 30px 0;
     }
 
@@ -114,20 +107,64 @@
       padding: 22px;
     }
 
-    .card h2 {
-      margin: 0 0 10px;
-      font-size: 34px;
-      color: #1428c8;
-    }
-
-    .card p {
+    .caption {
       margin: 0;
-      font-size: 24px;
-      color: #444;
+      font-size: 28px;
       line-height: 1.3;
+      font-weight: bold;
     }
 
-    .delete-btn {
+    .Rocket { color: #1428c8; }
+    .Luna { color: #ff69b4; }
+    .Both { color: #222; }
+    .Other { color: #444; }
+
+    .small-btn {
+      font-size: 16px;
+      padding: 12px;
+    }
+
+    .delete-btn { background: #d93025; border: none; }
+    .fav-btn { background: #ff69b4; border: none; }
+    .edit-btn { background: #1428c8; border: none; }
+
+    #status {
+      margin-top: 15px;
+      font-size: 18px;
+      color: #d93025;
+      font-weight: bold;
+    }
+
+    #slideshow {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: black;
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    #slideImg {
+      max-width: 100%;
+      max-height: 82%;
+      object-fit: contain;
+    }
+
+    #slideCaption {
+      color: white;
+      font-size: 28px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    #closeSlide {
+      position: fixed;
+      top: 25px;
+      right: 20px;
+      width: auto;
+      padding: 12px 18px;
       background: #d93025;
       border: none;
     }
@@ -148,7 +185,7 @@
   </header>
 
   <main>
-    <div class="upload-box">
+    <div class="box">
       <label>Choose photo</label>
       <input type="file" id="photoInput" accept="image/*">
 
@@ -157,12 +194,17 @@
         <option value="Rocket">Rocket</option>
         <option value="Luna">Luna</option>
         <option value="Both">Both</option>
+        <option value="Favorites">Favorites</option>
+        <option value="Holiday">Holiday</option>
+        <option value="Funny">Funny</option>
+        <option value="Family">Family</option>
       </select>
 
       <label>Caption</label>
       <input type="text" id="captionInput" placeholder="Add your caption">
 
       <button id="uploadBtn">Upload Photo</button>
+      <button onclick="startSlideshow()">Start Slideshow</button>
       <div id="status"></div>
     </div>
 
@@ -171,6 +213,10 @@
       <button onclick="setFilter('Rocket', this)">Rocket</button>
       <button onclick="setFilter('Luna', this)">Luna</button>
       <button onclick="setFilter('Both', this)">Both</button>
+      <button onclick="setFilter('Favorites', this)">Favorites</button>
+      <button onclick="setFilter('Holiday', this)">Holiday</button>
+      <button onclick="setFilter('Funny', this)">Funny</button>
+      <button onclick="setFilter('Family', this)">Family</button>
     </div>
 
     <div id="gallery" class="gallery"></div>
@@ -180,17 +226,18 @@
     Made with love for Rocket and Luna 🐶
   </footer>
 
+  <div id="slideshow">
+    <button id="closeSlide" onclick="closeSlideshow()">Close</button>
+    <img id="slideImg">
+    <div id="slideCaption"></div>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import {
-      getStorage,
-      ref,
-      uploadBytes,
-      getDownloadURL,
-      listAll,
-      getMetadata,
-      deleteObject
+      getStorage, ref, uploadBytes, getDownloadURL, listAll,
+      getMetadata, deleteObject, updateMetadata
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
     const firebaseConfig = {
@@ -208,9 +255,14 @@
 
     let photos = [];
     let currentFilter = "All";
+    let slideIndex = 0;
+    let slideTimer = null;
 
     const status = document.getElementById("status");
     const uploadBtn = document.getElementById("uploadBtn");
+
+    await signInAnonymously(auth);
+    await loadPhotos();
 
     function cleanCaption(caption) {
       if (!caption) return "";
@@ -223,36 +275,15 @@
     }
 
     function escapeHTML(text) {
-      return text.replace(/[&<>"']/g, function(match) {
-        return {
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#039;"
-        }[match];
-      });
+      return String(text || "").replace(/[&<>"']/g, m => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      }[m]));
     }
 
-    async function startApp() {
-      try {
-        status.textContent = "Signing in...";
-        await signInAnonymously(auth);
-        status.textContent = "";
-        await loadPhotos();
-      } catch (error) {
-        status.textContent = "Sign-in failed. Check Anonymous Authentication.";
-      }
-    }
-
-    uploadBtn.addEventListener("click", uploadPhoto);
-
-    async function uploadPhoto() {
-      const fileInput = document.getElementById("photoInput");
-      const categoryInput = document.getElementById("categoryInput");
-      const captionInput = document.getElementById("captionInput");
-
-      const file = fileInput.files[0];
+    uploadBtn.addEventListener("click", async () => {
+      const file = document.getElementById("photoInput").files[0];
+      const category = document.getElementById("categoryInput").value;
+      const caption = document.getElementById("captionInput").value.trim();
 
       if (!file) {
         alert("Please choose a photo first.");
@@ -262,83 +293,85 @@
       try {
         uploadBtn.disabled = true;
         uploadBtn.textContent = "Uploading...";
-        status.textContent = "";
 
-        const category = categoryInput.value;
-        const caption = captionInput.value.trim();
+        const filePath = "photos/" + Date.now() + "-" + file.name;
+        const fileRef = ref(storage, filePath);
 
-        const fileName = Date.now() + "-" + file.name;
-        const filePath = "photos/" + fileName;
-        const storageRef = ref(storage, filePath);
-
-        await uploadBytes(storageRef, file, {
+        await uploadBytes(fileRef, file, {
           customMetadata: {
-            category: category,
-            caption: caption
+            category,
+            caption,
+            favorite: "false"
           }
         });
 
-        fileInput.value = "";
-        captionInput.value = "";
+        document.getElementById("photoInput").value = "";
+        document.getElementById("captionInput").value = "";
 
         await loadPhotos();
 
-        uploadBtn.textContent = "Upload Photo";
         uploadBtn.disabled = false;
+        uploadBtn.textContent = "Upload Photo";
       } catch (error) {
         status.textContent = "Upload failed: " + error.message;
-        uploadBtn.textContent = "Upload Photo";
         uploadBtn.disabled = false;
+        uploadBtn.textContent = "Upload Photo";
       }
-    }
+    });
 
     async function loadPhotos() {
       photos = [];
+      const result = await listAll(ref(storage, "photos"));
 
-      try {
-        const photosRef = ref(storage, "photos");
-        const result = await listAll(photosRef);
+      for (const itemRef of result.items) {
+        const url = await getDownloadURL(itemRef);
+        const metadata = await getMetadata(itemRef);
 
-        for (const itemRef of result.items) {
-          const url = await getDownloadURL(itemRef);
-          const metadata = await getMetadata(itemRef);
-
-          photos.push({
-            url: url,
-            fullPath: itemRef.fullPath,
-            name: itemRef.name,
-            category: metadata.customMetadata?.category || "Both",
-            caption: cleanCaption(metadata.customMetadata?.caption || "")
-          });
-        }
-
-        photos.sort((a, b) => b.name.localeCompare(a.name));
-        renderGallery();
-      } catch (error) {
-        status.textContent = "Could not load photos: " + error.message;
+        photos.push({
+          url,
+          fullPath: itemRef.fullPath,
+          name: itemRef.name,
+          category: metadata.customMetadata?.category || "Both",
+          caption: cleanCaption(metadata.customMetadata?.caption || ""),
+          favorite: metadata.customMetadata?.favorite === "true"
+        });
       }
+
+      photos.sort((a, b) => b.name.localeCompare(a.name));
+      renderGallery();
+    }
+
+    function getFilteredPhotos() {
+      if (currentFilter === "All") return photos;
+      if (currentFilter === "Favorites") return photos.filter(p => p.favorite);
+      return photos.filter(p => p.category === currentFilter);
     }
 
     function renderGallery() {
       const gallery = document.getElementById("gallery");
       gallery.innerHTML = "";
 
-      const filteredPhotos = currentFilter === "All"
-        ? photos
-        : photos.filter(photo => photo.category === currentFilter);
+      getFilteredPhotos().forEach(photo => {
+        const colorClass = ["Rocket", "Luna", "Both"].includes(photo.category)
+          ? photo.category
+          : "Other";
 
-      filteredPhotos.forEach(photo => {
         const card = document.createElement("div");
         card.className = "card";
 
-        const caption = cleanCaption(photo.caption);
-
         card.innerHTML = `
-          <img src="${photo.url}" alt="${photo.category}">
+          <img src="${photo.url}" alt="">
           <div class="card-content">
-            <h2>${escapeHTML(photo.category)}</h2>
-            ${caption ? `<p>${escapeHTML(caption)}</p>` : ""}
-            <button class="delete-btn" onclick="deletePhoto('${photo.fullPath}')">Delete Photo</button>
+            ${photo.caption ? `<p class="caption ${colorClass}">${escapeHTML(photo.caption)}</p>` : ""}
+            <button class="fav-btn small-btn" onclick="toggleFavorite('${photo.fullPath}', '${photo.favorite}')">
+              ${photo.favorite ? "Remove Favorite" : "Add Favorite"}
+            </button>
+            <button class="edit-btn small-btn" onclick="editCaption('${photo.fullPath}', \`${escapeHTML(photo.caption)}\`)">
+              Edit Caption
+            </button>
+            <button class="delete-btn small-btn" onclick="deletePhoto('${photo.fullPath}')">
+              Delete Photo
+            </button>
           </div>
         `;
 
@@ -346,30 +379,76 @@
       });
     }
 
-    window.deletePhoto = async function(fullPath) {
-      const confirmDelete = confirm("Delete this photo?");
-      if (!confirmDelete) return;
+    window.toggleFavorite = async function(fullPath, currentValue) {
+      const newValue = currentValue !== "true";
+      const fileRef = ref(storage, fullPath);
+      const oldMeta = await getMetadata(fileRef);
 
-      try {
-        await deleteObject(ref(storage, fullPath));
-        await loadPhotos();
-      } catch (error) {
-        alert("Delete failed: " + error.message);
-      }
+      await updateMetadata(fileRef, {
+        customMetadata: {
+          ...oldMeta.customMetadata,
+          favorite: String(newValue)
+        }
+      });
+
+      await loadPhotos();
+    };
+
+    window.editCaption = async function(fullPath, oldCaption) {
+      const newCaption = prompt("Edit caption:", oldCaption);
+      if (newCaption === null) return;
+
+      const fileRef = ref(storage, fullPath);
+      const oldMeta = await getMetadata(fileRef);
+
+      await updateMetadata(fileRef, {
+        customMetadata: {
+          ...oldMeta.customMetadata,
+          caption: newCaption.trim()
+        }
+      });
+
+      await loadPhotos();
+    };
+
+    window.deletePhoto = async function(fullPath) {
+      if (!confirm("Delete this photo?")) return;
+      await deleteObject(ref(storage, fullPath));
+      await loadPhotos();
     };
 
     window.setFilter = function(filter, button) {
       currentFilter = filter;
-
-      document.querySelectorAll(".filters button").forEach(btn => {
-        btn.classList.remove("active");
-      });
-
+      document.querySelectorAll(".filters button").forEach(btn => btn.classList.remove("active"));
       button.classList.add("active");
       renderGallery();
     };
 
-    startApp();
+    window.startSlideshow = function() {
+      const slides = getFilteredPhotos();
+      if (slides.length === 0) {
+        alert("No photos to show.");
+        return;
+      }
+
+      document.getElementById("slideshow").style.display = "flex";
+      slideIndex = 0;
+
+      function showSlide() {
+        const photo = slides[slideIndex];
+        document.getElementById("slideImg").src = photo.url;
+        document.getElementById("slideCaption").textContent = photo.caption || "";
+        slideIndex = (slideIndex + 1) % slides.length;
+      }
+
+      showSlide();
+      slideTimer = setInterval(showSlide, 10000);
+    };
+
+    window.closeSlideshow = function() {
+      document.getElementById("slideshow").style.display = "none";
+      clearInterval(slideTimer);
+    };
   </script>
 </body>
 </html>
