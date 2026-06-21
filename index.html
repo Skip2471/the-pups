@@ -1,165 +1,288 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>The Pups</title>
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Pups</title>
 
-<style>
-body{margin:0;font-family:Arial,sans-serif;background:#fdeff6;color:#102a72}
-header{background:#1428c8;color:white;text-align:center;padding:55px 20px 65px;border-bottom-left-radius:60px;border-bottom-right-radius:60px}
-header h1{font-size:54px;margin:0}
-header p{font-size:22px;margin-top:20px}
-.container{max-width:1000px;margin:35px auto;padding:0 20px}
-.upload{background:white;padding:20px;border-radius:28px;margin-bottom:30px}
-input,select,button{width:100%;padding:15px;margin:8px 0;border-radius:20px;border:3px solid #1428c8;font-size:18px}
-button{background:white;color:#1428c8;font-weight:bold}
-button.active{background:#1428c8;color:white}
-.buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:35px}
-.gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:40px}
-.card{background:white;border-radius:28px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.08)}
-.card img{width:100%;height:340px;object-fit:cover;display:block}
-.card-content{padding:25px}
-.card-content h2{margin:0 0 12px;color:#1428c8;font-size:30px}
-.card-content p{margin:0;color:#444;font-size:22px}
-footer{text-align:center;padding:35px;color:#1428c8;font-size:18px}
-@media(max-width:700px){.buttons{grid-template-columns:repeat(2,1fr)}.gallery{grid-template-columns:1fr}.card img{height:320px}}
-</style>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fdeff6;
+      color: #102a72;
+    }
+
+    header {
+      background: #1428c8;
+      color: white;
+      text-align: center;
+      padding: 45px 20px 55px;
+      border-bottom-left-radius: 55px;
+      border-bottom-right-radius: 55px;
+    }
+
+    header h1 {
+      font-size: 48px;
+      margin: 0;
+      letter-spacing: 2px;
+    }
+
+    header p {
+      font-size: 20px;
+      margin-top: 10px;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    .upload-box {
+      background: white;
+      padding: 25px;
+      border-radius: 28px;
+      box-shadow: 0 8px 25px rgba(20, 40, 200, 0.12);
+      margin-bottom: 30px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 8px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 15px;
+      border-radius: 16px;
+      border: 2px solid #1428c8;
+      font-size: 18px;
+    }
+
+    button {
+      background: #1428c8;
+      color: white;
+      font-weight: bold;
+      margin-top: 18px;
+      cursor: pointer;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin: 30px 0;
+    }
+
+    .filters button {
+      background: white;
+      color: #1428c8;
+      border: 3px solid #1428c8;
+      border-radius: 22px;
+    }
+
+    .filters button.active {
+      background: #1428c8;
+      color: white;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 28px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 35px;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(20, 40, 200, 0.12);
+    }
+
+    .card img {
+      width: 100%;
+      display: block;
+    }
+
+    .card-content {
+      padding: 22px;
+    }
+
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 34px;
+      color: #1428c8;
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 24px;
+      color: #444;
+      line-height: 1.3;
+      white-space: pre-wrap;
+    }
+
+    footer {
+      text-align: center;
+      padding: 45px 20px;
+      font-size: 20px;
+      color: #1428c8;
+    }
+  </style>
 </head>
 
 <body>
-<header>
-<h1>🐾 The Pups</h1>
-<p>Rocket & Luna’s family photo album</p>
-</header>
+  <header>
+    <h1>The Pups</h1>
+    <p>Rocket and Luna’s photo gallery 🐶</p>
+  </header>
 
-<main class="container">
+  <main>
+    <div class="upload-box">
+      <label for="photoInput">Choose photo</label>
+      <input type="file" id="photoInput" accept="image/*">
 
-<div class="upload">
-<h2>Add a Photo</h2>
-<input type="file" id="photoInput" accept="image/*">
-<select id="albumInput">
-<option value="Rocket">Rocket</option>
-<option value="Luna">Luna</option>
-<option value="Both">Both</option>
-</select>
-<input type="text" id="captionInput" placeholder="Caption">
-<button onclick="uploadPhoto()">Upload Photo</button>
-<p id="status"></p>
-</div>
+      <label for="categoryInput">Category</label>
+      <select id="categoryInput">
+        <option value="Rocket">Rocket</option>
+        <option value="Luna">Luna</option>
+        <option value="Both">Both</option>
+      </select>
 
-<div class="buttons">
-<button class="active" onclick="filterGallery('all', this)">All</button>
-<button onclick="filterGallery('rocket', this)">Rocket</button>
-<button onclick="filterGallery('luna', this)">Luna</button>
-<button onclick="filterGallery('both', this)">Both</button>
-</div>
+      <label for="captionInput">Caption</label>
+      <input type="text" id="captionInput" placeholder="Add your caption">
 
-<section class="gallery" id="gallery"></section>
-</main>
+      <button onclick="uploadPhoto()">Upload Photo</button>
+    </div>
 
-<footer>Made with love for Rocket and Luna 🐶</footer>
+    <div class="filters">
+      <button class="active" onclick="setFilter('All', this)">All</button>
+      <button onclick="setFilter('Rocket', this)">Rocket</button>
+      <button onclick="setFilter('Luna', this)">Luna</button>
+      <button onclick="setFilter('Both', this)">Both</button>
+    </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getStorage, ref, uploadBytes, getDownloadURL, listAll } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+    <div id="gallery" class="gallery"></div>
+  </main>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCAyLnLBfqSPMG1PgIsy8yIq9juj4_NCZo",
-  authDomain: "the-pups.firebaseapp.com",
-  projectId: "the-pups",
-  storageBucket: "the-pups.firebasestorage.app",
-  messagingSenderId: "19468512902",
-  appId: "1:19468512902:web:582cbec77c9a04b390eb07"
-};
+  <footer>
+    Made with love for Rocket and Luna 🐶
+  </footer>
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const storage = getStorage(app);
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL, listAll } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-let currentFilter = "all";
-let allPhotos = [];
+    const firebaseConfig = {
+      apiKey: "AIzaSyCAyLnLBfqSPMG1PgIsy8yIq9juj4_NCZo",
+      authDomain: "the-pups.firebaseapp.com",
+      projectId: "the-pups",
+      storageBucket: "the-pups.firebasestorage.app",
+      messagingSenderId: "19468512902",
+      appId: "1:19468512902:web:582cbec77c9a04b390eb07"
+    };
 
-await signInAnonymously(auth);
-loadPhotos();
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const storage = getStorage(app);
+    const db = getFirestore(app);
 
-window.uploadPhoto = async function() {
-  const file = document.getElementById("photoInput").files[0];
-  const album = document.getElementById("albumInput").value;
-  const caption = document.getElementById("captionInput").value || `${album} photo`;
-  const status = document.getElementById("status");
+    let photos = [];
+    let currentFilter = "All";
 
-  if (!file) {
-    status.innerText = "Choose a photo first.";
-    return;
-  }
+    await signInAnonymously(auth);
+    await loadPhotos();
 
-  status.innerText = "Uploading...";
+    window.uploadPhoto = async function () {
+      const fileInput = document.getElementById("photoInput");
+      const categoryInput = document.getElementById("categoryInput");
+      const captionInput = document.getElementById("captionInput");
 
-  const safeCaption = caption.replace(/[^a-z0-9]/gi, "_");
-  const fileName = `${Date.now()}_${safeCaption}_${file.name}`;
-  const photoRef = ref(storage, `photos/${album}/${fileName}`);
+      const file = fileInput.files[0];
 
-  await uploadBytes(photoRef, file);
+      if (!file) {
+        alert("Please choose a photo first.");
+        return;
+      }
 
-  status.innerText = "Uploaded!";
-  document.getElementById("photoInput").value = "";
-  document.getElementById("captionInput").value = "";
+      const category = categoryInput.value;
+      const caption = captionInput.value.trim();
 
-  loadPhotos();
-};
+      const fileName = Date.now() + "-" + file.name;
+      const storageRef = ref(storage, "photos/" + fileName);
 
-async function loadPhotos() {
-  allPhotos = [];
+      await uploadBytes(storageRef, file);
+      const imageUrl = await getDownloadURL(storageRef);
 
-  for (const album of ["Rocket", "Luna", "Both"]) {
-    const folderRef = ref(storage, `photos/${album}`);
-    const result = await listAll(folderRef);
+      await addDoc(collection(db, "photos"), {
+        imageUrl: imageUrl,
+        category: category,
+        caption: caption,
+        createdAt: Date.now()
+      });
 
-    for (const item of result.items) {
-      const url = await getDownloadURL(item);
-      const parts = item.name.split("_");
-      const caption = parts.slice(1, -1).join(" ").replaceAll("_", " ");
+      fileInput.value = "";
+      captionInput.value = "";
 
-      allPhotos.push({
-        url,
-        album,
-        category: album.toLowerCase(),
-        caption: caption || `${album} photo`
+      await loadPhotos();
+    };
+
+    async function loadPhotos() {
+      photos = [];
+
+      const q = query(collection(db, "photos"), orderBy("createdAt", "desc"));
+      const snapshot = await getDocs(q);
+
+      snapshot.forEach((doc) => {
+        photos.push(doc.data());
+      });
+
+      renderGallery();
+    }
+
+    function renderGallery() {
+      const gallery = document.getElementById("gallery");
+      gallery.innerHTML = "";
+
+      const filteredPhotos = currentFilter === "All"
+        ? photos
+        : photos.filter(photo => photo.category === currentFilter);
+
+      filteredPhotos.forEach(photo => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        card.innerHTML = `
+          <img src="${photo.imageUrl}" alt="${photo.category}">
+          <div class="card-content">
+            <h2>${photo.category}</h2>
+            ${photo.caption ? `<p>${photo.caption}</p>` : ""}
+          </div>
+        `;
+
+        gallery.appendChild(card);
       });
     }
-  }
 
-  showPhotos();
-}
+    window.setFilter = function (filter, button) {
+      currentFilter = filter;
 
-window.filterGallery = function(category, buttonClicked) {
-  currentFilter = category;
-  document.querySelectorAll(".buttons button").forEach(button => button.classList.remove("active"));
-  buttonClicked.classList.add("active");
-  showPhotos();
-};
+      document.querySelectorAll(".filters button").forEach(btn => {
+        btn.classList.remove("active");
+      });
 
-function showPhotos() {
-  const gallery = document.getElementById("gallery");
-  gallery.innerHTML = "";
-
-  allPhotos
-    .filter(photo => currentFilter === "all" || photo.category === currentFilter)
-    .forEach(photo => {
-      gallery.innerHTML += `
-        <div class="card ${photo.category}">
-          <img src="${photo.url}" alt="${photo.caption}">
-          <div class="card-content">
-            <h2>${photo.album}</h2>
-            <p>${photo.caption}</p>
-          </div>
-        </div>
-      `;
-    });
-}
-</script>
+      button.classList.add("active");
+      renderGallery();
+    };
+  </script>
 </body>
 </html>
