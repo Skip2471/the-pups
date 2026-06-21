@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Pups</title>
-
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
   <style>
@@ -29,12 +28,10 @@
     header h1 {
       font-size: 48px;
       margin: 0;
-      letter-spacing: 2px;
     }
 
     header p {
       font-size: 20px;
-      margin-top: 10px;
     }
 
     main {
@@ -129,6 +126,13 @@
       white-space: pre-wrap;
     }
 
+    .delete-btn {
+      background: #d93025;
+      border: none;
+      color: white;
+      margin-top: 18px;
+    }
+
     footer {
       text-align: center;
       padding: 45px 20px;
@@ -179,8 +183,23 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL, listAll } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import {
+      getStorage,
+      ref,
+      uploadBytes,
+      getDownloadURL,
+      deleteObject
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      getDocs,
+      deleteDoc,
+      doc,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCAyLnLBfqSPMG1PgIsy8yIq9juj4_NCZo",
@@ -218,13 +237,15 @@
       const caption = captionInput.value.trim();
 
       const fileName = Date.now() + "-" + file.name;
-      const storageRef = ref(storage, "photos/" + fileName);
+      const filePath = "photos/" + fileName;
+      const storageRef = ref(storage, filePath);
 
       await uploadBytes(storageRef, file);
       const imageUrl = await getDownloadURL(storageRef);
 
       await addDoc(collection(db, "photos"), {
         imageUrl: imageUrl,
+        filePath: filePath,
         category: category,
         caption: caption,
         createdAt: Date.now()
@@ -242,11 +263,24 @@
       const q = query(collection(db, "photos"), orderBy("createdAt", "desc"));
       const snapshot = await getDocs(q);
 
-      snapshot.forEach((doc) => {
-        photos.push(doc.data());
+      snapshot.forEach((document) => {
+        photos.push({
+          id: document.id,
+          ...document.data()
+        });
       });
 
       renderGallery();
+    }
+
+    function cleanCaption(caption) {
+      if (!caption) return "";
+      return caption
+        .replace(/\sIMG$/i, "")
+        .replace(/\sIMG_\d+$/i, "")
+        .replace(/\sJPG$/i, "")
+        .replace(/\sJPEG$/i, "")
+        .trim();
     }
 
     function renderGallery() {
@@ -258,6 +292,8 @@
         : photos.filter(photo => photo.category === currentFilter);
 
       filteredPhotos.forEach(photo => {
+        const caption = cleanCaption(photo.caption);
+
         const card = document.createElement("div");
         card.className = "card";
 
@@ -265,13 +301,34 @@
           <img src="${photo.imageUrl}" alt="${photo.category}">
           <div class="card-content">
             <h2>${photo.category}</h2>
-            ${photo.caption ? `<p>${photo.caption}</p>` : ""}
+            ${caption ? `<p>${caption}</p>` : ""}
+            <button class="delete-btn" onclick="deletePhoto('${photo.id}', '${photo.filePath || ""}')">
+              Delete Photo
+            </button>
           </div>
         `;
 
         gallery.appendChild(card);
       });
     }
+
+    window.deletePhoto = async function (photoId, filePath) {
+      const confirmDelete = confirm("Delete this photo?");
+
+      if (!confirmDelete) return;
+
+      await deleteDoc(doc(db, "photos", photoId));
+
+      if (filePath) {
+        try {
+          await deleteObject(ref(storage, filePath));
+        } catch (error) {
+          console.log("Photo file could not be deleted from storage, but it was removed from the gallery.");
+        }
+      }
+
+      await loadPhotos();
+    };
 
     window.setFilter = function (filter, button) {
       currentFilter = filter;
