@@ -31,7 +31,11 @@
       font-size: 48px;
       margin: 0;
       cursor: pointer;
-    }
+      touch-action: manipulation;
+      -webkit-user-select: none;
+      user-select: none;
+      padding: 10px;
+}
 
     header p { font-size: 20px; }
 
@@ -342,11 +346,10 @@
       clearTimeout(pressTimer);
     }
 
-    secretTitle.addEventListener("touchstart", startSecretPress);
-    secretTitle.addEventListener("mousedown", startSecretPress);
-    secretTitle.addEventListener("touchend", cancelSecretPress);
-    secretTitle.addEventListener("mouseup", cancelSecretPress);
-    secretTitle.addEventListener("mouseleave", cancelSecretPress);
+    secretTitle.addEventListener("pointerdown", startSecretPress);
+      secretTitle.addEventListener("pointerup", cancelSecretPress);
+      secretTitle.addEventListener("pointercancel", cancelSecretPress);
+      secretTitle.addEventListener("pointerleave", cancelSecretPress);
 
     secretPaw.addEventListener("click", () => {
       secretPaw.style.display = "none";
