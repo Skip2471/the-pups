@@ -5,15 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>The Pups</title>
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
   <style>
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: #fdeff6;
       color: #102a72;
+      -webkit-user-select: none;
       user-select: none;
     }
+
     header {
       background: linear-gradient(#7f7cf0, #1428c8);
       color: white;
@@ -22,22 +26,32 @@
       border-bottom-left-radius: 55px;
       border-bottom-right-radius: 55px;
     }
-    header h1 { font-size: 48px; margin: 0; }
+
+    header h1 {
+      font-size: 48px;
+      margin: 0;
+      cursor: pointer;
+    }
+
     header p { font-size: 20px; }
+
     main {
       max-width: 900px;
       margin: 30px auto;
       padding: 0 20px;
     }
+
     .box, .card {
       background: white;
       border-radius: 35px;
       box-shadow: 0 8px 25px rgba(20, 40, 200, 0.12);
     }
+
     .box {
       padding: 25px;
       margin-bottom: 30px;
     }
+
     label {
       font-weight: bold;
       display: block;
@@ -45,6 +59,7 @@
       margin-bottom: 8px;
       font-size: 20px;
     }
+
     input, select, button {
       width: 100%;
       padding: 15px;
@@ -52,6 +67,7 @@
       border: 2px solid #1428c8;
       font-size: 18px;
     }
+
     button {
       background: #1428c8;
       color: white;
@@ -59,57 +75,95 @@
       margin-top: 14px;
       cursor: pointer;
     }
+
     .logout-btn { background: #444; border: none; }
+    .delete-btn { background: #d93025; border: none; }
+    .fav-btn { background: #ff69b4; border: none; }
+    .edit-btn { background: #1428c8; border: none; }
+
+    .small-btn {
+      font-size: 16px;
+      padding: 12px;
+    }
+
     .filters {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 14px;
       margin: 30px 0;
     }
+
     .filters button {
       background: white;
       color: #1428c8;
       border: 3px solid #1428c8;
       border-radius: 22px;
     }
+
     .filters button.active {
       background: #1428c8;
       color: white;
     }
+
     .gallery {
       display: grid;
       grid-template-columns: 1fr;
       gap: 28px;
     }
+
     .card { overflow: hidden; }
-    .card img { width: 100%; display: block; }
+
+    .card img {
+      width: 100%;
+      display: block;
+    }
+
     .card-content { padding: 22px; }
+
     .caption {
-      margin: 0;
+      margin: 0 0 12px;
       font-size: 28px;
       line-height: 1.3;
       font-weight: bold;
     }
+
     .Rocket { color: #1428c8; }
     .Luna { color: #ff69b4; }
     .Both { color: #222; }
     .Other { color: #444; }
-    .small-btn { font-size: 16px; padding: 12px; }
-    .delete-btn { background: #d93025; border: none; }
-    .fav-btn { background: #ff69b4; border: none; }
-    .edit-btn { background: #1428c8; border: none; }
+
     #status, #loginStatus {
       margin-top: 15px;
       font-size: 18px;
       color: #d93025;
       font-weight: bold;
     }
+
     #adminMessage {
       margin-top: 15px;
       font-size: 18px;
-      font-weight: bold;
       color: #1428c8;
+      font-weight: bold;
     }
+
+    #secretPaw {
+      display: none;
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 10000;
+      background: white;
+      color: #1428c8;
+      border: 3px solid #ff69b4;
+      border-radius: 50%;
+      width: 58px;
+      height: 58px;
+      font-size: 30px;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 25px rgba(0,0,0,.25);
+    }
+
     #slideshow {
       display: none;
       position: fixed;
@@ -120,17 +174,20 @@
       align-items: center;
       flex-direction: column;
     }
+
     #slideImg {
       max-width: 100%;
       max-height: 82%;
       object-fit: contain;
     }
+
     #slideCaption {
       color: white;
       font-size: 28px;
       padding: 20px;
       text-align: center;
     }
+
     #closeSlide {
       position: fixed;
       top: 25px;
@@ -140,6 +197,7 @@
       background: #d93025;
       border: none;
     }
+
     footer {
       text-align: center;
       padding: 45px 20px;
@@ -148,26 +206,36 @@
     }
   </style>
 </head>
+
 <body>
+  <button id="secretPaw">🐾</button>
+
   <header>
-    <h1>The Pups</h1>
+    <h1 id="secretTitle">The Pups</h1>
     <p>Rocket and Luna’s photo gallery 🐶</p>
   </header>
+
   <main>
     <div class="box" id="loginBox" style="display:none;">
       <h2>Admin Login</h2>
+
       <label>Email</label>
       <input type="email" id="emailInput" placeholder="Email">
+
       <label>Password</label>
       <input type="password" id="passwordInput" placeholder="Password">
+
       <button id="loginBtn">Login</button>
       <button id="logoutBtn" class="logout-btn" style="display:none;">Log Out</button>
+
       <div id="loginStatus"></div>
       <div id="adminMessage"></div>
     </div>
+
     <div class="box" id="adminBox" style="display:none;">
       <label>Choose photo</label>
       <input type="file" id="photoInput" accept="image/*">
+
       <label>Category</label>
       <select id="categoryInput">
         <option value="Rocket">Rocket</option>
@@ -178,14 +246,18 @@
         <option value="Funny">Funny</option>
         <option value="Family">Family</option>
       </select>
+
       <label>Caption</label>
       <input type="text" id="captionInput" placeholder="Add your caption">
+
       <button id="uploadBtn">Upload Photo</button>
       <div id="status"></div>
     </div>
+
     <div class="box">
       <button onclick="startSlideshow()">Start Slideshow</button>
     </div>
+
     <div class="filters">
       <button class="active" onclick="setFilter('All', this)">All</button>
       <button onclick="setFilter('Rocket', this)">Rocket</button>
@@ -196,16 +268,18 @@
       <button onclick="setFilter('Funny', this)">Funny</button>
       <button onclick="setFilter('Family', this)">Family</button>
     </div>
+
     <div id="gallery" class="gallery"></div>
   </main>
-  <footer id="secretFooter">
-    Made with love for Rocket and Luna 🐶
-  </footer>
+
+  <footer>Made with love for Rocket and Luna 🐶</footer>
+
   <div id="slideshow">
     <button id="closeSlide" onclick="closeSlideshow()">Close</button>
     <img id="slideImg">
     <div id="slideCaption"></div>
   </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
@@ -218,6 +292,7 @@
       getStorage, ref, uploadBytes, getDownloadURL, listAll,
       getMetadata, deleteObject, updateMetadata
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyCAyLnLBfqSPMG1PgIsy8yIq9juj4_NCZo",
       authDomain: "the-pups.firebaseapp.com",
@@ -226,38 +301,59 @@
       messagingSenderId: "19468512902",
       appId: "1:19468512902:web:582cbec77c9a04b390eb07"
     };
+
     const adminEmails = [
       "eliasalcantar04@gmail.com",
       "brendarod68@gmail.com"
     ];
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const storage = getStorage(app);
+
     let photos = [];
     let currentFilter = "All";
     let slideIndex = 0;
     let slideTimer = null;
     let isAdmin = false;
     let pressTimer = null;
+    let pawTimer = null;
+
+    const secretTitle = document.getElementById("secretTitle");
+    const secretPaw = document.getElementById("secretPaw");
     const loginBox = document.getElementById("loginBox");
     const adminBox = document.getElementById("adminBox");
     const loginStatus = document.getElementById("loginStatus");
     const adminMessage = document.getElementById("adminMessage");
     const uploadBtn = document.getElementById("uploadBtn");
-    document.getElementById("secretFooter").addEventListener("touchstart", startLongPress);
-    document.getElementById("secretFooter").addEventListener("mousedown", startLongPress);
-    document.getElementById("secretFooter").addEventListener("touchend", cancelLongPress);
-    document.getElementById("secretFooter").addEventListener("mouseup", cancelLongPress);
-    document.getElementById("secretFooter").addEventListener("mouseleave", cancelLongPress);
-    function startLongPress() {
+
+    function startSecretPress() {
+      clearTimeout(pressTimer);
       pressTimer = setTimeout(() => {
-        loginBox.style.display = "block";
-        loginBox.scrollIntoView({ behavior: "smooth" });
-      }, 1500);
+        secretPaw.style.display = "flex";
+        clearTimeout(pawTimer);
+        pawTimer = setTimeout(() => {
+          secretPaw.style.display = "none";
+        }, 5000);
+      }, 5000);
     }
-    function cancelLongPress() {
+
+    function cancelSecretPress() {
       clearTimeout(pressTimer);
     }
+
+    secretTitle.addEventListener("touchstart", startSecretPress);
+    secretTitle.addEventListener("mousedown", startSecretPress);
+    secretTitle.addEventListener("touchend", cancelSecretPress);
+    secretTitle.addEventListener("mouseup", cancelSecretPress);
+    secretTitle.addEventListener("mouseleave", cancelSecretPress);
+
+    secretPaw.addEventListener("click", () => {
+      secretPaw.style.display = "none";
+      loginBox.style.display = "block";
+      loginBox.scrollIntoView({ behavior: "smooth" });
+    });
+
     function cleanCaption(caption) {
       if (!caption) return "";
       return caption
@@ -267,24 +363,29 @@
         .replace(/\sJPEG$/i, "")
         .trim();
     }
+
     function escapeHTML(text) {
       return String(text || "").replace(/[&<>"']/g, m => ({
         "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
       }[m]));
     }
+
     function safeForButton(text) {
       return String(text || "")
         .replace(/\\/g, "\\\\")
         .replace(/`/g, "\\`")
         .replace(/\$/g, "\\$");
     }
+
     document.getElementById("loginBtn").addEventListener("click", async () => {
       const email = document.getElementById("emailInput").value.trim();
       const password = document.getElementById("passwordInput").value;
+
       if (!email || !password) {
         loginStatus.textContent = "Please enter your email and password.";
         return;
       }
+
       try {
         loginStatus.textContent = "";
         await signInWithEmailAndPassword(auth, email, password);
@@ -292,47 +393,56 @@
         loginStatus.textContent = "Login failed. Check the email and password.";
       }
     });
+
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await signOut(auth);
     });
+
     onAuthStateChanged(auth, async user => {
       isAdmin = !!user && adminEmails.includes(user.email);
+
       if (user && !isAdmin) {
         loginStatus.textContent = "This account is not allowed to make changes.";
         await signOut(auth);
         return;
       }
+
       adminBox.style.display = isAdmin ? "block" : "none";
       document.getElementById("logoutBtn").style.display = isAdmin ? "block" : "none";
       document.getElementById("loginBtn").style.display = isAdmin ? "none" : "block";
+
       adminMessage.textContent = isAdmin
         ? "Admin mode is on. You can upload, edit, favorite, and delete photos."
         : "";
+
       await loadPhotos();
     });
+
     uploadBtn.addEventListener("click", async () => {
-      if (!isAdmin) {
-        alert("Only approved admins can upload photos.");
-        return;
-      }
+      if (!isAdmin) return alert("Only approved admins can upload photos.");
+
       const file = document.getElementById("photoInput").files[0];
       const category = document.getElementById("categoryInput").value;
       const caption = document.getElementById("captionInput").value.trim();
-      if (!file) {
-        alert("Please choose a photo first.");
-        return;
-      }
+
+      if (!file) return alert("Please choose a photo first.");
+
       try {
         uploadBtn.disabled = true;
         uploadBtn.textContent = "Uploading...";
+
         const filePath = "photos/" + Date.now() + "-" + file.name;
         const fileRef = ref(storage, filePath);
+
         await uploadBytes(fileRef, file, {
           customMetadata: { category, caption, favorite: "false" }
         });
+
         document.getElementById("photoInput").value = "";
         document.getElementById("captionInput").value = "";
+
         await loadPhotos();
+
         uploadBtn.disabled = false;
         uploadBtn.textContent = "Upload Photo";
       } catch (error) {
@@ -341,13 +451,17 @@
         uploadBtn.textContent = "Upload Photo";
       }
     });
+
     async function loadPhotos() {
       photos = [];
+
       try {
         const result = await listAll(ref(storage, "photos"));
+
         for (const itemRef of result.items) {
           const url = await getDownloadURL(itemRef);
           const metadata = await getMetadata(itemRef);
+
           photos.push({
             url,
             fullPath: itemRef.fullPath,
@@ -357,6 +471,7 @@
             favorite: metadata.customMetadata?.favorite === "true"
           });
         }
+
         photos.sort((a, b) => b.name.localeCompare(a.name));
         renderGallery();
       } catch (error) {
@@ -364,18 +479,22 @@
           "<p>Could not load photos. Check your Firebase Storage Rules.</p>";
       }
     }
+
     function getFilteredPhotos() {
       if (currentFilter === "All") return photos;
       if (currentFilter === "Favorites") return photos.filter(p => p.favorite);
       return photos.filter(p => p.category === currentFilter);
     }
+
     function renderGallery() {
       const gallery = document.getElementById("gallery");
       gallery.innerHTML = "";
+
       getFilteredPhotos().forEach(photo => {
         const colorClass = ["Rocket", "Luna", "Both"].includes(photo.category)
           ? photo.category
           : "Other";
+
         const adminButtons = isAdmin ? `
           <button class="fav-btn small-btn" onclick="toggleFavorite('${photo.fullPath}', '${photo.favorite}')">
             ${photo.favorite ? "Remove Favorite" : "Add Favorite"}
@@ -387,8 +506,10 @@
             Delete Photo
           </button>
         ` : "";
+
         const card = document.createElement("div");
         card.className = "card";
+
         card.innerHTML = `
           <img src="${photo.url}" alt="">
           <div class="card-content">
@@ -396,59 +517,75 @@
             ${adminButtons}
           </div>
         `;
+
         gallery.appendChild(card);
       });
     }
+
     window.toggleFavorite = async function(fullPath, currentValue) {
       if (!isAdmin) return alert("Only approved admins can make changes.");
+
       const newValue = currentValue !== "true";
       const fileRef = ref(storage, fullPath);
       const oldMeta = await getMetadata(fileRef);
+
       await updateMetadata(fileRef, {
         customMetadata: { ...oldMeta.customMetadata, favorite: String(newValue) }
       });
+
       await loadPhotos();
     };
+
     window.editCaption = async function(fullPath, oldCaption) {
       if (!isAdmin) return alert("Only approved admins can make changes.");
+
       const newCaption = prompt("Edit caption:", oldCaption);
       if (newCaption === null) return;
+
       const fileRef = ref(storage, fullPath);
       const oldMeta = await getMetadata(fileRef);
+
       await updateMetadata(fileRef, {
         customMetadata: { ...oldMeta.customMetadata, caption: newCaption.trim() }
       });
+
       await loadPhotos();
     };
+
     window.deletePhoto = async function(fullPath) {
       if (!isAdmin) return alert("Only approved admins can delete photos.");
+
       if (!confirm("Delete this photo?")) return;
       await deleteObject(ref(storage, fullPath));
       await loadPhotos();
     };
+
     window.setFilter = function(filter, button) {
       currentFilter = filter;
       document.querySelectorAll(".filters button").forEach(btn => btn.classList.remove("active"));
       button.classList.add("active");
       renderGallery();
     };
+
     window.startSlideshow = function() {
       const slides = getFilteredPhotos();
-      if (slides.length === 0) {
-        alert("No photos to show.");
-        return;
-      }
+
+      if (slides.length === 0) return alert("No photos to show.");
+
       document.getElementById("slideshow").style.display = "flex";
       slideIndex = 0;
+
       function showSlide() {
         const photo = slides[slideIndex];
         document.getElementById("slideImg").src = photo.url;
         document.getElementById("slideCaption").textContent = photo.caption || "";
         slideIndex = (slideIndex + 1) % slides.length;
       }
+
       showSlide();
       slideTimer = setInterval(showSlide, 10000);
     };
+
     window.closeSlideshow = function() {
       document.getElementById("slideshow").style.display = "none";
       clearInterval(slideTimer);
